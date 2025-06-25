@@ -1,61 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Game Hub</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #f4f4f4;
-      text-align: center;
+      background: #f9f9f9;
       margin: 0;
+      padding: 0;
+      text-align: center;
     }
     header {
-      background: #333;
+      background: #222;
       color: white;
       padding: 1rem;
     }
-    .game-list {
-      display: flex;
+    nav button {
+      margin: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .game {
+      display: none;
+      margin-top: 2rem;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+    }
+    td {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 2rem;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+    #grid, #snakeBoard {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 5px;
       justify-content: center;
-      flex-wrap: wrap;
-      gap: 2rem;
-      margin: 2rem;
+      margin-bottom: 2rem;
     }
-    .game-card {
-      background: white;
-      border-radius: 10px;
-      padding: 1rem;
-      width: 200px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    .tile, .snake-cell {
+      width: 80px;
+      height: 80px;
+      background: #ccc;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    iframe {
-      width: 100%;
-      height: 200px;
-      border: none;
+    canvas {
+      background: #eee;
+      border: 2px solid #333;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Simple Game Hub</h1>
-    <p>Play fun mini-games like Tic Tac Toe</p>
+    <p>Play fun games right on this page!</p>
   </header>
 
-  <section class="game-list">
-    <div class="game-card">
-      <h3>Tic Tac Toe</h3>
-      <iframe src="https://playtictactoe.org/" title="Tic Tac Toe"></iframe>
-    </div>
-    <div class="game-card">
-      <h3>2048</h3>
-      <iframe src="https://play2048.co/" title="2048"></iframe>
-    </div>
-    <div class="game-card">
-      <h3>Snake</h3>
-      <iframe src="https://playsnake.org/" title="Snake"></iframe>
-    </div>
-  </section>
+  <nav>
+    <button onclick="showGame('ticTacToe')">Play Tic Tac Toe</button>
+    <button onclick="showGame('game2048')">Play 2048</button>
+    <button onclick="showGame('snakeGame')">Play Snake</button>
+  </nav>
+
+  <!-- Tic Tac Toe Game -->
+  <div id="ticTacToe" class="game">
+    <h2>Tic Tac Toe</h2>
+    <table>
+      <tbody>
+        <tr><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td></tr>
+        <tr><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td></tr>
+        <tr><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td><td onclick="makeMove(this)"></td></tr>
+      </tbody>
+    </table>
+    <p id="winner"></p>
+    <button onclick="resetTicTacToe()">Restart</button>
+  </div>
+
+  <!-- 2048 Game -->
+  <div id="game2048" class="game">
+    <h2>2048 (Mini Clone)</h2>
+    <div id="grid"></div>
+    <p>Use arrow keys to move tiles.</p>
+  </div>
+
+  <!-- Snake Game -->
+  <div id="snakeGame" class="game">
+    <h2>Snake Game</h2>
+    <canvas id="snakeCanvas" width="320" height="320"></canvas>
+    <p>Use arrow keys to control the snake.</p>
+  </div>
+
+  <script defer>
+    function showGame(id) {
+      document.querySelectorAll('.game').forEach(game => game.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    // --- Tic Tac Toe ---
+    let currentPlayer = 'X';
+    function makeMove(cell) {
+      if (cell.textContent !== '') return;
+      cell.textContent = currentPlayer;
+      if (checkWinner()) {
+        document.getElementById('winner').textContent = `${currentPlayer} wins!`;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      }
+    }
+    function checkWinner() {
+      const cells = [...document.querySelectorAll('td')];
+      const combos = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return combos.some(([a,b,c]) => {
+        return cells[a].textContent &&
+               cells[a].textContent === cells[b].textContent &&
+               cells[a].textContent === cells[c].textContent;
+      });
+    }
+    function resetTicTacToe() {
+      document.querySelectorAll('td').forEach(cell => cell.textContent = '');
+      document.getElementById('winner').textContent = '';
+      currentPlayer = 'X';
+    }
+
+    // --- Simple 2048 ---
+    const grid = document.getElementById('grid');
+    let tiles = [];
+    function create2048() {
+      grid.innerHTML = '';
+      tiles = [];
+      for (let i = 0; i < 16; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = Math.random() < 0.2 ? '2' : '';
+        grid.appendChild(tile);
+        tiles.push(tile);
+      }
+    }
+    function move2048(dir) {
+      const nums = tiles.map(tile => parseInt(tile.textContent) || 0);
+      if (dir === 'ArrowLeft') {
+        for (let i = 0; i < 16; i += 4) {
+          let row = nums.slice(i, i + 4).filter(n => n);
+          while (row.length < 4) row.push(0);
+          row.forEach((n, j) => tiles[i + j].textContent = n ? n : '');
+        }
+      }
+    }
+    window.addEventListener('keydown', e => {
+      if (document.getElementById('game2048').style.display === 'block') move2048(e.key);
+      if (document.getElementById('snakeGame').style.display === 'block') changeDirection(e);
+    });
+
+    window.onload = () => {
+      create2048();
+      initSnake();
+    }
+
+    // --- Snake Game ---
+    const canvas = document.getElementById("snakeCanvas");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+    let snake = [{ x: 5, y: 5 }];
+    let direction = "RIGHT";
+    let food = { x: Math.floor(Math.random() * 16), y: Math.floor(Math.random() * 16) };
+
+    function drawSnakeGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let part of snake) {
+        ctx.fillStyle = "green";
+        ctx.fillRect(part.x * box, part.y * box, box, box);
+      }
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x * box, food.y * box, box, box);
+    }
+
+    function updateSnake() {
+      let head = { ...snake[0] };
+      if (direction === "LEFT") head.x--;
+      if (direction === "RIGHT") head.x++;
+      if (direction === "UP") head.y--;
+      if (direction === "DOWN") head.y++;
+
+      if (head.x === food.x && head.y === food.y) {
+        snake.unshift(food);
+        food = { x: Math.floor(Math.random() * 16), y: Math.floor(Math.random() * 16) };
+      } else {
+        snake.pop();
+        snake.unshift(head);
+      }
+
+      if (head.x < 0 || head.x >= 16 || head.y < 0 || head.y >= 16 || snake.slice(1).some(p => p.x === head.x && p.y === head.y)) {
+        alert("Game Over!");
+        snake = [{ x: 5, y: 5 }];
+        direction = "RIGHT";
+      }
+    }
+
+    function changeDirection(e) {
+      if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function initSnake() {
+      setInterval(() => {
+        if (document.getElementById('snakeGame').style.display === 'block') {
+          updateSnake();
+          drawSnakeGame();
+        }
+      }, 200);
+    }
+  </script>
 </body>
 </html>
