@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Game Hub</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #222;
+      color: white;
+      padding: 1rem;
+    }
+    nav button {
+      margin: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .game {
+      display: none;
+      margin-top: 2rem;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+    }
+    td {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 2rem;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+    #grid, #snakeBoard {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .tile, .snake-cell {
+      width: 80px;
+      height: 80px;
+      background: #ccc;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas {
+      background: #eee;
+      border: 2px solid #333;
+    }
+    .pong-canvas {
+      background: #000;
+      display: block;
+      margin: 1rem auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simple Game Hub</h1>
+    <p>Play fun games right on this page!</p>
+  </header>
+
+  <nav>
+    <button onclick="showGame('ticTacToe')">Play Tic Tac Toe</button>
+    <button onclick="showGame('game2048')">Play 2048</button>
+    <button onclick="showGame('snakeGame')">Play Snake</button>
+    <button onclick="showGame('pongGame')">Play Pong</button>
+  </nav>
+
+  <!-- Existing Games (Tic Tac Toe, 2048, Snake) stay unchanged -->
+
+  <!-- Pong Game -->
+  <div id="pongGame" class="game">
+    <h2>Pong</h2>
+    <canvas id="pongCanvas" width="400" height="300" class="pong-canvas"></canvas>
+    <p>Use W/S for left paddle and Up/Down for right paddle.</p>
+  </div>
+
+  <script defer>
+    // Keep existing JS...
+    // Add Pong Game logic
+    const pongCanvas = document.getElementById("pongCanvas");
+    const pongCtx = pongCanvas?.getContext("2d");
+    const paddleHeight = 60, paddleWidth = 10, ballSize = 10;
+    let leftY = 120, rightY = 120, ballX = 200, ballY = 150, dx = 2, dy = 2;
+
+    function drawPong() {
+      pongCtx.clearRect(0, 0, pongCanvas.width, pongCanvas.height);
+      pongCtx.fillStyle = "white";
+      pongCtx.fillRect(0, leftY, paddleWidth, paddleHeight);
+      pongCtx.fillRect(pongCanvas.width - paddleWidth, rightY, paddleWidth, paddleHeight);
+      pongCtx.fillRect(ballX, ballY, ballSize, ballSize);
+    }
+
+    function updatePong() {
+      ballX += dx;
+      ballY += dy;
+
+      if (ballY <= 0 || ballY + ballSize >= pongCanvas.height) dy *= -1;
+
+      // Paddle collision
+      if (
+        (ballX <= paddleWidth && ballY >= leftY && ballY <= leftY + paddleHeight) ||
+        (ballX + ballSize >= pongCanvas.width - paddleWidth && ballY >= rightY && ballY <= rightY + paddleHeight)
+      ) {
+        dx *= -1;
+      }
+
+      if (ballX < 0 || ballX > pongCanvas.width) {
+        ballX = 200; ballY = 150; dx = 2; dy = 2;
+      }
+    }
+
+    function pongLoop() {
+      if (document.getElementById('pongGame').style.display === 'block') {
+        updatePong();
+        drawPong();
+      }
+      requestAnimationFrame(pongLoop);
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'w') leftY -= 10;
+      if (e.key === 's') leftY += 10;
+      if (e.key === 'ArrowUp') rightY -= 10;
+      if (e.key === 'ArrowDown') rightY += 10;
+    });
+
+    pongLoop();
+  </script>
+</body>
+</html>
